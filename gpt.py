@@ -59,9 +59,28 @@ def further_assistant_message(prompt, role):
 
 youtube_regex = r'(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.+'
 
-st.title("YT Chatbot")
+if "disabled" not in st.session_state:
+    st.session_state.disabled = False
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+with st.sidebar:
+    openai_api_key = st.text_input("OpenAI API Key",
+                                   type="password",
+                                   disabled=st.session_state.disabled)
+    "[Get an OpenAI API key](https://platform.openai.com/account/api-keys)"
+
+    confirm_api = st.toggle("Apply API Key")
+
+    if confirm_api:
+        st.session_state.disabled = False
+        st.write("Applied ✅")
+    else:
+        st.session_state.disabled = True
+
+
+st.title("💬 YouTube Chatbot")
+st.caption("🚀 A streamlit chatbot powered by OpenAI LLM")
+
+client = OpenAI(api_key=openai_api_key)
 
 st.markdown("Hello, please enter a YouTube URL to begin!")
 
@@ -95,7 +114,10 @@ if "url_received" not in st.session_state:
     st.session_state["url_received"] = False
 
 if not st.session_state["url_received"]:
-    if prompt := st.chat_input("YouTube URL (https://www.youtube.com/watch?v=dQw4w9WgXcQ)"):
+    if prompt := st.chat_input("https://www.youtube.com/watch?v=dQw4w9WgXcQ"):
+        if not openai_api_key:
+            st.info("Please add your OpenAI API key to continue.")
+            st.stop()
         if not re.match(youtube_regex, str(prompt)):
             st.error('Please enter a valid YouTube URL.')
         else:
