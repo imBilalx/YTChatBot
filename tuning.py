@@ -1,10 +1,11 @@
 from openai import OpenAI
 from split import *
 from transcript_example import text
+import streamlit as st
 
 temperatures = [0.8, 1, 1.2]
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 def assistant_message(prompt, temperature, append: bool = False, messages=None):
     if messages is None:
