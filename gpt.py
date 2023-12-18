@@ -1,6 +1,9 @@
 import re
+
+import openai
+
 from Prompts import *
-from openai import OpenAI
+from openai import OpenAI, AuthenticationError
 import streamlit as st
 from split import *
 
@@ -16,11 +19,10 @@ def assistant_message(prompt):
     for message in messages:
         print(f"{message['role']}: {message['content']}")
 
-    with st.chat_message("assistant"):
-        response = client.chat.completions.create(
-            model=st.session_state["openai_model"],
-            messages=messages)
-        return response.choices[0].message.content
+    response = client.chat.completions.create(
+        model=st.session_state.openai_model,
+        messages=messages)
+    return response.choices[0].message.content
 
 
 def further_assistant_message(prompt, role):
@@ -31,7 +33,7 @@ def further_assistant_message(prompt, role):
                     for m in st.session_state.messages]
 
     messages = [{"role": m["role"], "content": m["content"]}
-                for m in st.session_state.messages if m['role'] != 'user']
+                for m in st.session_state.messages if m['role'] != 'user' and m['role'] != 'modelID']
 
     # Print or log the message history here
     for message in all_messages:
@@ -43,7 +45,7 @@ def further_assistant_message(prompt, role):
 
         # Now the API call includes the entire conversation history
         for response in client.chat.completions.create(
-                model=st.session_state["openai_model"],
+                model=st.session_state.openai_model,
                 messages=messages,
                 stream=True,
         ):
@@ -54,9 +56,13 @@ def further_assistant_message(prompt, role):
 
     # Remember to update your conversation history in session state
     st.session_state.messages.append({"role": "assistant", "content": full_response})
+    st.session_state.messages.append({"role": "modelID", "content": f"{st.session_state.openai_model}"})
 
 
 youtube_regex = r'(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.+'
+
+if "openai_model" not in st.session_state:
+    st.session_state.openai_model = None
 
 if "disabled" not in st.session_state:
     st.session_state.disabled = False
@@ -64,33 +70,94 @@ if "disabled" not in st.session_state:
 if "good_api_key" not in st.session_state:
     st.session_state.good_api_key = False
 
-with st.sidebar:
+if "toggled" not in st.session_state:
+    st.session_state.toggled = False
 
-    openai_api_key = st.text_input("OpenAI API Key",
-                                   type="password",
-                                   disabled=st.session_state.disabled)
+if "toggle_disable" not in st.session_state:
+    st.session_state.toggle_disable = False
+
+if "openai_api_key" not in st.session_state:
+    st.session_state.openai_api_key = ''
+
+if "owner_good" not in st.session_state:
+    st.session_state.owner_good = False
+
+client = OpenAI(api_key=st.session_state.openai_api_key)
+
+with st.sidebar:
+    st.sidebar.title("API Settings")
 
     "[Get an OpenAI API key](https://platform.openai.com/account/api-keys)"
 
-    confirm_api = st.toggle("Apply")
+    model = st.radio(
+        "Select GPT Model",
+        ["GPT 3.5 Turbo", "GPT 4 Preview"]
+    )
 
-    if confirm_api:
-        st.session_state.disabled = False
-        if re.match("^sk-[a-zA-Z0-9]{48}$", openai_api_key):
-            st.success('Valid API Key', icon="✅")
-            st.session_state.good_api_key = True
+    if model == "GPT 3.5 Turbo":
+        st.session_state.openai_model = "gpt-3.5-turbo-1106"
+    elif model == "GPT 4 Preview":
+        st.session_state.openai_model = "gpt-4-1106-preview"
+
+    owner = st.toggle("Owner?")
+    if owner:
+        st.session_state.toggled = False
+        owner_code = st.text_input("Enter Passcode  🔑",
+                                   type="password")
+        if owner_code == st.secrets["OWNER_PASSCODE"]:
+            st.success('Welcome', icon="✅")
+            st.session_state.openai_api_key = st.secrets["OPENAI_API_KEY"]
+            st.session_state.owner_good = True
+
         else:
-            st.error("Invalid API Key", icon="🚨")
+            st.error('Invalid Passcode', icon="🚨")
+
     else:
-        st.session_state.disabled = True
+        st.session_state.owner_good = False
+        confirm_api = st.toggle("🔒 Lock Key", disabled=st.session_state.toggle_disable)
+
+        if confirm_api:
+            st.session_state.disabled = True
+            st.session_state.toggled = True
+        else:
+            st.session_state.toggled = False
+            st.session_state.disabled = False
+
+        st.session_state.openai_api_key = st.text_input("OpenAI API Key  🔑",
+                                                        type="password",
+                                                        disabled=st.session_state.disabled)
+
+
+        if st.session_state.toggled:
+
+            if re.match("^sk-[a-zA-Z0-9]{48}$", st.session_state.openai_api_key):
+
+                try:
+                    response = client.models.list()
+                    st.success('Valid API Key', icon="✅")
+                    st.session_state.good_api_key = True
+                except AuthenticationError:
+                    st.error("API Key Authentication Failed", icon="🚨")
+                    st.session_state.good_api_key = False
+            else:
+                st.warning("Incorrect API Key Format", icon="🚨")
+                st.session_state.good_api_key = False
+
+        else:
+            if st.session_state.openai_api_key:
+                st.info('Select the Lock Key Toggle located above.', icon="ℹ️")
 
 st.title("💬 YouTube Chatbot")
 st.caption("🚀 A streamlit chatbot powered by OpenAI LLM")
 
-client = OpenAI(api_key=openai_api_key)
-
-if "openai_model" not in st.session_state:
-    st.session_state["openai_model"] = "gpt-3.5-turbo-1106"
+if st.session_state.owner_good:
+    st.session_state.all_good = True
+else:
+    if not (st.session_state.toggled and st.session_state.good_api_key):
+        st.warning("To proceed, please add a valid OpenAI API key and lock it.", icon="⚠️️")
+        st.session_state.all_good = False
+    else:
+        st.session_state.all_good = True
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -105,10 +172,19 @@ if "explain_more" not in st.session_state:
     st.session_state.explain_more = False
 
 if "video_url" in st.session_state:
-    st.video(st.session_state["video_url"])
+    st.video(st.session_state.video_url)
 
+next_message_is_model = False
 for message in st.session_state.messages:
-    if message["role"] != "system":
+    if message["role"] == "assistant":
+        assistant_text = message["content"]
+        next_message_is_model = True
+    elif message["role"] == "modelID" and next_message_is_model:
+        assistant_text += f'  \n<span style="font-size: 11px; color:gray"> Model: {message["content"]} </span>'
+        with st.chat_message("assistant"):
+            st.markdown(assistant_text, unsafe_allow_html=True)
+        next_message_is_model = False
+    elif message["role"] == "user":
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
@@ -116,57 +192,61 @@ for message in st.session_state.messages:
 if "url_received" not in st.session_state:
     st.session_state.url_received = False
 
-if not st.session_state.url_received:
-    if not st.session_state.good_api_key:
-        st.info("Please add your OpenAI API key first to continue.", icon="ℹ️")
-    else:
-        st.info("Please enter a YouTube URL below to begin.", icon="ℹ️")
-        if prompt := st.chat_input("https://www.youtube.com/watch?v=dQw4w9WgXcQ"):
-            if not re.match(youtube_regex, str(prompt)):
-                st.error('Please enter a valid YouTube URL.', icon="🚨")
+if not st.session_state.url_received and st.session_state.all_good:
+    st.info("Please enter a YouTube URL below to begin.", icon="ℹ️")
+    if prompt := st.chat_input("https://www.youtube.com/watch?v=dQw4w9WgXcQ"):
+        if not re.match(youtube_regex, str(prompt)):
+            st.error('Please enter a valid YouTube URL.', icon="🚨")
+        else:
+            st.video(prompt)
+            st.session_state.video_url = prompt
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.chat_message("user").write(prompt)
+            with st.status("Summarizing...") as status:
+                st.write("Fetching and processing transcript...")
+                text = get_transcript(prompt)
+                st.write("Got the transcript!")
+                st.write("Now summarizing with gpt...")
+                status.update(label="Got the transcript!", state="complete")
+            if words_to_tokens(text) > 3277:
+                with st.status("Using GPT...") as status:
+                    status.update(label="Video is long, splitting in parts...", state="running")
+                    chunks = split_text_into_chunks(text, 3277)
+                    total_chunks = len(chunks)
+                    status.update(label=f"Total {total_chunks} Parts", state="running")
+                    progress_bar = st.progress(0)
+                    progress_text = st.empty()
+                    for i, chunk in enumerate(chunks):
+                        status.update(label=f"Summarizing Transcript Part {i + 1}/{total_chunks}...",
+                                      state="running")
+                        progress_bar.progress(i / total_chunks)
+                        chunk_resp = assistant_message(
+                            summarize_each_chunk(f"Raw Transcript {i + 1}/{total_chunks}:\n{chunk}"))
+                        st.session_state.messages.append({"role": "system", "content":
+                            f"Transcript Part {i + 1}/{total_chunks} Summary:\n{chunk_resp}"})
+                        # Update the progress bar
+                        progress_text.text(f"Transcript Part {i + 1}/{total_chunks} summarized.")
+                    progress_bar.progress(total_chunks / total_chunks)
+                    progress_text.text(f"Transcript Part {i + 1}/{total_chunks} summarized.")
+                    status.update(label="Summarized!", state="complete")
+                further_assistant_message(last_message(total_chunks), "system")
+                # After processing the URL, set "url_received" to True
+                st.session_state.url_received = True
+                st.session_state.tldr = True
+                st.session_state.explain_more = True
+                st.session_state.new_yt = True
+                st.rerun()
             else:
-                st.video(prompt)
-                st.session_state["video_url"] = prompt
-                st.session_state.messages.append({"role": "user", "content": prompt})
-                with st.chat_message("user"):
-                    st.markdown(prompt)
-                with st.status("Summarizing...") as status:
-                    st.write("Fetching and processing transcript...")
-                    text = get_transcript(prompt)
-                    st.write("Got the transcript!")
-                    st.write("Now summarizing with gpt...")
-                    status.update(label="Done!", state="complete")
-                if words_to_tokens(text) > 3277:
-                    with st.status("Using GPT...") as status:
-                        st.write("Video is long, splitting in parts...")
-                        chunks = split_text_into_chunks(text, 3277)
-                        total_chunks = len(chunks) - 1
-                        st.write(f"Total {total_chunks} Parts")
-                        for i, chunk in enumerate(chunks):
-                            chunk_resp = assistant_message(
-                                summarize_each_chunk(f"Raw Transcript {i}/{total_chunks}:\n{chunk}"))
-                            st.session_state.messages.append({"role": "system", "content":
-                                f"Transcript Part {i}/{total_chunks} Summary:\n{chunk_resp}"})
-                            st.write(f"Part {i}/{total_chunks} summarized...")
+                further_assistant_message(summary_request(text), "system")
+                # After processing the URL, set "url_received" to True
+                st.session_state.url_received = True
+                st.session_state.tldr = True
+                st.session_state.explain_more = True
+                st.session_state.new_yt = True
+                st.rerun()
 
-                        status.update(label="Done!", state="complete")
-                    further_assistant_message(last_message(total_chunks), "system")
-                    # After processing the URL, set "url_received" to True
-                    st.session_state.url_received = True
-                    st.session_state.tldr = True
-                    st.session_state.explain_more = True
-                    st.session_state.new_yt = True
-                    st.rerun()
-                else:
-                    further_assistant_message(summary_request(text), "system")
-                    # After processing the URL, set "url_received" to True
-                    st.session_state.url_received = True
-                    st.session_state.tldr = True
-                    st.session_state.explain_more = True
-                    st.session_state.new_yt = True
-                    st.rerun()
 
-else:
+elif st.session_state.url_received and st.session_state.all_good:
     def hide_buttons():
         for button_name in st.session_state['buttons_clicked']:
             st.session_state[button_name] = False
@@ -227,26 +307,32 @@ else:
             further_assistant_message(answer_with_outside_info(prompt), "system")
             st.rerun()
 
-    # # Display button if not clicked before
-    # if not st.session_state.tldr and st.button("TL;DR List"):
-    #     further_assistant_message(answer_only_from(emoji_list()))
-    #     st.session_state.tldr = True  # Update the clicked state
-    #
-    # elif st.session_state.new_yt and st.button("Enter a new YouTube URL"):
-    #     st.session_state.messages = []
-    #     st.session_state.url_received = False
-    #     st.session_state.tldr = False  # Reset the clicked state
-    #     st.rerun()
-    # else:
-    #     prompt = st.chat_input("Ask Further Questions?")
-    #
-    # if prompt := st.chat_input("Ask Further Questions?"):
-    #     # Append the user's input to the chat history
-    #     st.session_state.messages.append({"role": "user", "content": prompt})
-    #     with st.chat_message("user"):
-    #         st.markdown(prompt)
-    #     st.session_state.new_yt = False  # Hide button
-    #     # Display the assistant's reply
-    #     further_assistant_message(answer_only_from(prompt))
-    #     st.session_state.new_yt = True  # Show button
-    #     st.rerun()
+st.caption(
+    f"To modify API settings, click on the arrow in the top left corner to open the sidebar.  \n(Selected Model: {st.session_state.openai_model})")
+
+# for key, value in st.session_state.items():
+#     print(f'{key}: {value}')
+
+# # Display button if not clicked before
+# if not st.session_state.tldr and st.button("TL;DR List"):
+#     further_assistant_message(answer_only_from(emoji_list()))
+#     st.session_state.tldr = True  # Update the clicked state
+#
+# elif st.session_state.new_yt and st.button("Enter a new YouTube URL"):
+#     st.session_state.messages = []
+#     st.session_state.url_received = False
+#     st.session_state.tldr = False  # Reset the clicked state
+#     st.rerun()
+# else:
+#     prompt = st.chat_input("Ask Further Questions?")
+#
+# if prompt := st.chat_input("Ask Further Questions?"):
+#     # Append the user's input to the chat history
+#     st.session_state.messages.append({"role": "user", "content": prompt})
+#     with st.chat_message("user"):
+#         st.markdown(prompt)
+#     st.session_state.new_yt = False  # Hide button
+#     # Display the assistant's reply
+#     further_assistant_message(answer_only_from(prompt))
+#     st.session_state.new_yt = True  # Show button
+#     st.rerun()

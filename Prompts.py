@@ -27,7 +27,7 @@ def mid_message(i, chunk, total_chunks):
 
 def last_message(total_chunks):
     _ = (
-        f"Based on the previously provided {total_chunks + 1} summaries in the conversation history, create a coherent "
+        f"Based on the previously provided {total_chunks} summaries in the conversation history, create a coherent "
         f"and succinct summary. This final summary should encapsulate the primary themes and key points from the "
         f"entire content, projecting an overall narrative drawn from the individual summaries of the complete "
         f"transcript.")
