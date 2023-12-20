@@ -148,7 +148,7 @@ with st.sidebar:
                 st.info('Select the Lock Key Toggle located above.', icon="ℹ️")
 
 st.title("💬 YouTube Chatbot")
-st.caption("🚀 A streamlit chatbot powered by OpenAI LLM")
+st.caption("🚀 A Streamlit chatbot powered by OpenAI LLM. Provide a YouTube link below and get a quick summary. You can ask follow-up questions about the video, or ask to summarize another one anytime.")
 
 if st.session_state.owner_good:
     st.session_state.all_good = True
