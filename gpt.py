@@ -59,7 +59,7 @@ def further_assistant_message(prompt, role):
     st.session_state.messages.append({"role": "modelID", "content": f"{st.session_state.openai_model}"})
 
 
-youtube_regex = r'(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.+'
+youtube_regex = r'(https?://)?(www\.)?(youtube\.com|youtu\.?be)/.*'
 
 if "openai_model" not in st.session_state:
     st.session_state.openai_model = None
