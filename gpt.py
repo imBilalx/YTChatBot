@@ -147,6 +147,19 @@ with st.sidebar:
             if st.session_state.openai_api_key:
                 st.info('Select the Lock Key Toggle located above.', icon="ℹ️")
 
+    st.divider()
+    st.subheader("👨‍💻 Author: **Bilal Akhtar**", anchor=False)
+
+    st.subheader("🔗 Contact:", anchor=False)
+    st.markdown(
+        """
+        - [Email](mailto:bilalakhtar268@gmail.com)
+        - [LinkedIn](https://www.linkedin.com/in/iambilalakhtar/)
+        - [Github](https://github.com/itsBillyZee)
+        """
+    )
+
+
 st.title("💬 YouTube Chatbot")
 st.caption("🚀 A Streamlit chatbot powered by OpenAI LLM. Provide a YouTube link below and get a quick summary. You can ask follow-up questions about the video, or ask to summarize another one anytime.")
 
