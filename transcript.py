@@ -3,7 +3,10 @@ from youtube_transcript_api import YouTubeTranscriptApi
 
 def get_transcript(video_url):
     # Extract video id from the URL
-    video_id = video_url.split("watch?v=")[1]
+    if 'youtu.be' in video_url:
+        video_id = video_url.split('https://youtu.be/')[1].split('?')[0]
+    elif 'youtube.com' in video_url:
+        video_id = video_url.split("watch?v=")[1].split('&')[0]
 
     # Fetch the list of all available transcripts of video
     transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
@@ -21,4 +24,3 @@ def get_transcript(video_url):
     full_transcript_text = " ".join([t['text'] for t in transcript_fetched])
 
     return full_transcript_text
-
