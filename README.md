@@ -17,8 +17,6 @@ The main libraries this project is based on are:
 -  Streamlit
 -  OpenAI
 -  Youtube Transcript API
--  Numpy
--  Pandas
 
 Additional detailed dependencies are listed in the `requirements.txt` file.
 
