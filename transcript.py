@@ -31,4 +31,4 @@ def get_transcript(video_url):
     return full_transcript_text
 
 
-print(get_transcript("https://www.youtube.com/watch?v=7YuAzR2XVAM"))
+# print(get_transcript("https://www.youtube.com/watch?v=7YuAzR2XVAM"))

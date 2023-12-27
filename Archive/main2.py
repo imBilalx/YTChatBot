@@ -3,7 +3,7 @@ import re
 from transcript import get_transcript
 from openai import OpenAI
 from split import *
-from Prompts import *
+from prompts import *
 
 # Initialize Streamlit UI components
 st.title("YT Chatbot")

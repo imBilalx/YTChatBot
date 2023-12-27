@@ -1,8 +1,8 @@
-import re
-from Prompts import *
+from prompts import *
 from openai import OpenAI, AuthenticationError
 import streamlit as st
 from split import *
+from transcript import *
 
 
 def assistant_message(prompt):

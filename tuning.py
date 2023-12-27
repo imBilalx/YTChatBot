@@ -1,5 +1,5 @@
 from openai import OpenAI
-from Prompts import summary_request
+from prompts import summary_request
 from split import *
 from already_sum import text4 as already_sum_text
 from rouge import Rouge
