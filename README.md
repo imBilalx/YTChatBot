@@ -65,7 +65,7 @@ pip install -r requirements.txt
 Now, you have cloned the project and installed the dependencies. You can start the application using the below command in the terminal:
 
 ```shell
-streamlit run app.py
+streamlit run gpt.py
 ```
 Open a web browser and go to `http://localhost:8501` where you should see the application running.
 
