@@ -1,4 +1,5 @@
 from youtube_transcript_api import YouTubeTranscriptApi
+import re
 
 
 def get_transcript(video_url):
@@ -23,4 +24,11 @@ def get_transcript(video_url):
     # Concatenate all the text fields
     full_transcript_text = " ".join([t['text'] for t in transcript_fetched])
 
+    # Remove special characters without adding spaces and remove any extra spaces
+    full_transcript_text = re.sub(r'\W+', ' ', full_transcript_text)
+    full_transcript_text = " ".join(full_transcript_text.split())
+
     return full_transcript_text
+
+
+print(get_transcript("https://www.youtube.com/watch?v=7YuAzR2XVAM"))

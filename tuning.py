@@ -1,17 +1,15 @@
 from openai import OpenAI
+from Prompts import summary_request
 from split import *
-from transcript_example import text
-import streamlit as st
+from already_sum import text4 as already_sum_text
+from rouge import Rouge
 
-temperatures = [0.8, 1, 1.2]
+messages = []
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+client = OpenAI(api_key="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")
 
 
-def assistant_message(prompt, temperature, append: bool = False, messages=None):
-    if messages is None:
-        messages = []
-
+def assistant_message(prompt, append: bool = False):
     if append:
         messages.append({"role": "system", "content": prompt})
 
@@ -22,43 +20,40 @@ def assistant_message(prompt, temperature, append: bool = False, messages=None):
 
     message_contents.append({"role": "system", "content": prompt})
 
+    # Print or log the message history here
+    # for message in messages:
+    #     print(f"{message['role']}: {message['content']}")
+
     response = client.chat.completions.create(
         model="gpt-3.5-turbo-1106",
-        messages=message_contents,
-        temperature=temperature
-    )
-
-    return response.choices[0].message.content, messages
+        messages=message_contents, )
+    return response.choices[0].message.content
 
 
-summary_storage = []
+url = "https://www.youtube.com/watch?v=y-TPFKTnG_4"
+text = get_transcript(url)
+if words_to_tokens(text) > 3277:
+    chunks = split_text_into_chunks(text, 3277)
+    total_chunks = len(chunks) - 1
+    for i, chunk in enumerate(chunks):
+        chunk_resp = assistant_message(summarize_each_chunk(f"Raw Transcript {i}/{total_chunks}:\n{chunk}"))
+        messages.append({"role": "system", "content": f"Transcript Part {i}/{total_chunks} Summary:\n{chunk_resp}"})
 
-for run in range(5):
-    print(f"-------Start of Run {run + 1}/{5}-------")
-    for temp in temperatures:
-        chunks = split_text_into_chunks(text, 3277)
-        total_chunks = len(chunks) - 1
-        messages = []
-        for i, chunk in enumerate(chunks):
-            chunk_resp, messages = assistant_message(
-                summarize_each_chunk(f"Raw Transcript {i}/{total_chunks}:\n{chunk}"),
-                temp,
-                messages=messages)
-            messages.append({"role": "system", "content": f"Transcript Part {i}/{total_chunks} Summary:\n{chunk_resp}"})
-            if i == 5:
-                summary_storage.append(f"Transcript Part {i}/{total_chunks} Summary:\n{chunk_resp}")
+    final_resp = assistant_message(last_message(total_chunks), append=True)
+    messages.append({"role": "assistant", "content": final_resp})
+    # print("FINAL")
+    # for message in messages:
+    #     print(f"{message['role']}: {message['content']}")
+else:
+    final_resp = assistant_message(summary_request(text))
 
-        final_resp, messages = assistant_message(last_message(total_chunks), temp, append=True, messages=messages)
-        messages.append({"role": "assistant", "content": final_resp})
 
-        print(f"\nFINAL for Temperature {temp}")
-        for message in messages:
-            # Check for specific message content
-            if "Transcript Part 5/8 Summary" in message['content']:
-                print(f"{message['role']}: {message['content']}")
-    print(f"-------End of Run {run + 1}/{5}-------")
 
-# Print stored summaries
-print("\nStored summaries:")
-for summary in summary_storage:
-    print(summary)
+
+# rouge = Rouge()
+print("AI Summary: " + final_resp)
+# print("Summary from Author: " + already_sum_text)
+#
+# scores = rouge.get_scores(final_resp, already_sum_text, avg=True)
+#
+# print("ROUGE Scores:", scores)

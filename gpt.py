@@ -1,7 +1,4 @@
 import re
-
-import openai
-
 from Prompts import *
 from openai import OpenAI, AuthenticationError
 import streamlit as st
@@ -127,7 +124,6 @@ with st.sidebar:
                                                         type="password",
                                                         disabled=st.session_state.disabled)
 
-
         if st.session_state.toggled:
 
             if re.match("^sk-[a-zA-Z0-9]{48}$", st.session_state.openai_api_key):
@@ -159,9 +155,10 @@ with st.sidebar:
         """
     )
 
-
 st.title("💬 YouTube Chatbot")
-st.caption("🚀 A Streamlit chatbot powered by OpenAI LLM. Provide a YouTube link below and get a quick summary. You can ask follow-up questions about the video, or ask to summarize another one anytime.")
+st.caption(
+    "🚀 A Streamlit chatbot powered by OpenAI LLM. Provide a YouTube link below and get a quick summary. You can ask "
+    "follow-up questions about the video, or ask to summarize another one anytime.")
 
 if st.session_state.owner_good:
     st.session_state.all_good = True
@@ -322,30 +319,3 @@ elif st.session_state.url_received and st.session_state.all_good:
 
 st.caption(
     f"To modify API settings, click on the arrow in the top left corner to open the sidebar.  \n(Selected Model: {st.session_state.openai_model})")
-
-# for key, value in st.session_state.items():
-#     print(f'{key}: {value}')
-
-# # Display button if not clicked before
-# if not st.session_state.tldr and st.button("TL;DR List"):
-#     further_assistant_message(answer_only_from(emoji_list()))
-#     st.session_state.tldr = True  # Update the clicked state
-#
-# elif st.session_state.new_yt and st.button("Enter a new YouTube URL"):
-#     st.session_state.messages = []
-#     st.session_state.url_received = False
-#     st.session_state.tldr = False  # Reset the clicked state
-#     st.rerun()
-# else:
-#     prompt = st.chat_input("Ask Further Questions?")
-#
-# if prompt := st.chat_input("Ask Further Questions?"):
-#     # Append the user's input to the chat history
-#     st.session_state.messages.append({"role": "user", "content": prompt})
-#     with st.chat_message("user"):
-#         st.markdown(prompt)
-#     st.session_state.new_yt = False  # Hide button
-#     # Display the assistant's reply
-#     further_assistant_message(answer_only_from(prompt))
-#     st.session_state.new_yt = True  # Show button
-#     st.rerun()

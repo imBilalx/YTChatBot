@@ -1,6 +1,9 @@
 def summary_request(text):
-    return (f'The following text is a transcript from a video. Please provide a concise summary '
-            f'that captures the main points and overall theme of the content.\n"{text}"')
+    return (f'Provide a detailed summary of the following content. Your summary should identify and '
+            f'explain the central themes and main messages involved. It should also describe any key '
+            f'narrative or structural elements unfolding in the course of the material. If there are any '
+            f'significant phrases, points or moments, include them in your summary. Remember to start your '
+            f'summary without referring to the content as a "transcript".\n"{text}"')
 
 
 def first_message(total_chunks):
