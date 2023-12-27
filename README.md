@@ -72,7 +72,7 @@ To enable the owner toggle and prevent entering the API keys every time, you sho
 
 ```toml
 OWNER_PASSCODE = "your_owner_passcode"
-OPEN_API_KEY = "your_openai_api_key"
+OPENAI_API_KEY = "your_openai_api_key"
 ```
 
 Replace `"your_owner_passcode"` and `"your_openai_api_key"` with your desired passcode and your OpenAI API key, respectively.
