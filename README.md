@@ -62,7 +62,7 @@ After setting up the environment and activating it, install the required depende
 pip install -r requirements.txt
 ```
 
-#### Setup Streamlit Secrets
+#### Setup Streamlit Secrets (Optional)
 
 To enable the owner toggle and prevent entering the API keys every time, you should create a secrets file:
 
