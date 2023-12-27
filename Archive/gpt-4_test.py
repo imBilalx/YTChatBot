@@ -2,6 +2,8 @@
 import pandas as pd
 from openai import OpenAI
 from lose_yourself import *
+import streamlit as st
+
 
 
 def highlight_max(s):
@@ -90,7 +92,7 @@ FLUENCY_SCORE_STEPS = """
 Read the summary and evaluate its fluency based on the given criteria. Assign a fluency score from 1 to 3.
 """
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 
 def get_geval_score(
@@ -144,4 +146,3 @@ pivot_df = pd.DataFrame(data, index=None).pivot(
     index="Evaluation Type", columns="Summary Type", values="Score"
 )
 styled_pivot_df = pivot_df.style.apply(highlight_max, axis=1)
-display(styled_pivot_df)

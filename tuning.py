@@ -1,12 +1,13 @@
 from openai import OpenAI
-from prompts import summary_request
+from prompts import *
 from split import *
-from already_sum import text4 as already_sum_text
-from rouge import Rouge
+import streamlit as st
+
+from transcript import get_transcript
 
 messages = []
 
-client = OpenAI(api_key="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")
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 
 def assistant_message(prompt, append: bool = False):
