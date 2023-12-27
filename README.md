@@ -36,23 +36,23 @@ This will create a new directory in your current location named `YTChatBot`.
 
 #### Setup a Virtual Environment 
 
-It's a good practice to create a virtual environment for each of your projects. 
+It's good practice to create a virtual environment for each of your projects. 
 
-If you're using vanilla python, you can create a virtual environment by running the following commands:
+-  For macOS/Linux:
 
-```shell
-cd YTChatBot                     # Move into the cloned directory
-python3 -m venv env              # Create a new virtual environment
-source env/bin/activate          # Activate the virtual environment
-```
+    ```shell
+    cd YTChatBot                     # Move into the cloned directory
+    python3 -m venv env              # Create a new virtual environment
+    source env/bin/activate          # Activate the virtual environment
+    ```
 
-If you are using `conda`, you can create a new environment and activate it with:
+-  For Windows:
 
-```shell
-cd YTChatBot                     # Move into the cloned directory
-conda create -n myenv python=3.8 # Replace 'myenv' with your preferred environment name, 'python=3.8' with your preferred python version
-conda activate myenv
-```
+    ```shell
+    cd YTChatBot                     # Move into the cloned directory
+    py -m venv env                   # Create a new virtual environment
+    .\env\Scripts\activate           # Activate the virtual environment
+    ```
 
 #### Install Dependencies
 
@@ -62,10 +62,27 @@ After setting up the environment and activating it, install the required depende
 pip install -r requirements.txt
 ```
 
-Now, you have cloned the project and installed the dependencies. You can start the application using the below command in the terminal:
+#### Setup Streamlit Secrets
+
+To enable the owner toggle and prevent entering the API keys every time, you should create a secrets file:
+
+1. Create a new directory `.streamlit` if it doesn't exist already, and within it create a new file called `secrets.toml`.
+
+2. Open `secrets.toml` with a text editor and add the following:
+
+```toml
+OWNER_PASSCODE = "your_owner_passcode"
+OPEN_API_KEY = "your_openai_api_key"
+```
+
+Replace `"your_owner_passcode"` and `"your_openai_api_key"` with your desired passcode and your OpenAI API key, respectively.
+
+#### Running the application
+
+You can start the application using the below command in the terminal:
 
 ```shell
-streamlit run gpt.py
+streamlit run app.py
 ```
 Open a web browser and go to `http://localhost:8501` where you should see the application running.
 
