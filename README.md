@@ -89,3 +89,7 @@ Open a web browser and go to `http://localhost:8501` where you should see the ap
 ### Usage
 
 Provide a YouTube link in the text box and receive a quick summary. You can also ask follow-up questions about the video, or ask to summarize a different video. The application is also live and can be used directly without any installation at https://ytchatbot.streamlit.app/
+
+### Research Paper
+
+For more detailed analysis and the research behind this project, check out the research paper [here](docs/final.pdf).
