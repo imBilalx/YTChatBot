@@ -13,7 +13,6 @@ def first_message(total_chunks):
          f"{total_chunks}]\n\nThen you just answer: 'Received part 0/"
          f"{total_chunks}'\n\nAnd when I tell you 'ALL PARTS SENT', then you can continue "
          f"processing the data and answering my requests. Understood?")
-    # print(_)
     return _
 
 
@@ -24,7 +23,6 @@ def mid_message(i, chunk, total_chunks):
          f"{total_chunks}]\nRemember not answering yet. Just acknowledge you received this "
          f"part with the message 'Part {i}/{total_chunks} received' and wait for the next "
          f"part.")
-    # print(_)
     return _
 
 
@@ -34,7 +32,6 @@ def last_message(total_chunks):
         f"and succinct summary. This final summary should encapsulate the primary themes and key points from the "
         f"entire content, projecting an overall narrative drawn from the individual summaries of the complete "
         f"transcript.")
-    # print(_)
     return _
 
 
@@ -45,7 +42,6 @@ def summarize_each_chunk(chunk):
          f"ensure the narrative flow and fidelity of the original content while optimizing for clarity and "
          f"brevity. If this is not the first transcript section, please refer to the previously summarized transcript "
          f"parts from the message history for better context and a more cohesive summary.\n'{chunk}'")
-    # print(_)
     return _
 
 
