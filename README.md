@@ -82,7 +82,7 @@ Replace `"your_owner_passcode"` and `"your_openai_api_key"` with your desired pa
 You can start the application using the below command in the terminal:
 
 ```shell
-streamlit run app.py
+streamlit run gpt.py
 ```
 Open a web browser and go to `http://localhost:8501` where you should see the application running.
 
